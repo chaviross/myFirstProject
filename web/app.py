@@ -1,8 +1,26 @@
 from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
 
+from pymongo import MongoClient
+
 app = Flask(__name__)
 api = Api(app)
+
+client = MongoClient("mongodb://localhost:27017/myDatabase")
+db = client.aNewDB
+UserName = db["UserName"]
+
+UserName.insert_one({
+    'num_of_users':0
+})
+
+
+class Visit(Resource):
+    def get(self):
+        prev_num = UserName.find({})[0]['num_of_users']
+        new_num = prev_num+1
+        UserName.update({},{"$set":{"num_of_users":new_num}})
+        return str("Hello user "+ str(new_num))
 
 
 def check_post_data(posted_data, function_name):
@@ -18,6 +36,7 @@ def check_post_data(posted_data, function_name):
             return 302
         else:
             return 200
+
 
 class Add (Resource):
     def post(self):
@@ -109,7 +128,7 @@ class Divide (Resource):
         y = post_data["y"]
         x = int(x)
         y = int(y)
-        ret = (x*1.0 )/ y
+        ret = (x*1.0)/y
         retMap = {
             "massage": ret,
             "Status_Code": 200
@@ -121,6 +140,8 @@ api.add_resource(Add, "/add")
 api.add_resource(Sub, "/sub")
 api.add_resource(Multiply, "/multi")
 api.add_resource(Divide, "/divide")
+api.add_resource(Visit, "/hello")
+
 
 @app.route('/')
 def hello_world():
