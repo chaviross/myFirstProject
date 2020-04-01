@@ -3,4 +3,3 @@ flask_restful
 pymongo
 bcrypt
 spacy
-spacy
